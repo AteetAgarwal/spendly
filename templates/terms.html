@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Terms and Conditions — Spendly{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <div class="terms-inner">
+        <h1>Terms and Conditions</h1>
+        <p class="last-updated">Last Updated: October 18, 2026</p>
+
+        <section class="terms-section">
+            <h2>1. Acceptance of Terms</h2>
+            <p>By accessing or using Spendly, you agree to be bound by these Terms and Conditions and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this site.</p>
+        </section>
+
+        <section class="terms-section">
+            <h2>2. Use of Service</h2>
+            <p>Spendly provides a personal expense tracking tool. You agree to use the service only for lawful purposes and in a manner that does not infringe the rights of others or restrict the use of the service by other users.</p>
+            <p>You are responsible for maintaining the confidentiality of your account and password.</p>
+        </section>
+
+        <section class="terms-section">
+            <h2>3. User Data</h2>
+            <p>You retain ownership of the financial data you upload to Spendly. By using the service, you grant us the right to host, store, and process this data solely for the purpose of providing the expense tracking functionality.</p>
+            <p>We implement industry-standard security measures to protect your data, but we cannot guarantee absolute security.</p>
+        </section>
+
+        <section class="terms-section">
+            <h2>4. Limitations of Liability</h2>
+            <p>Spendly is provided "as is" and "as available" without any warranties of any kind. In no event shall Spendly be liable for any damages (including, without limitation, damages for loss of data or profit) arising out of the use or inability to use the materials on the service.</p>
+            <p>Financial tracking is a tool for guidance; we are not responsible for any financial losses or accounting errors resulting from the use of our software.</p>
+        </section>
+
+        <section class="terms-section">
+            <h2>5. Changes to Terms</h2>
+            <p>We reserve the right to revise these terms at any time without notice. By using this website, you are agreeing to be bound by the then-current version of these Terms and Conditions.</p>
+        </section>
+
+        <div class="terms-footer">
+            <a href="{{ url_for('landing') }}" class="btn-ghost">Back to Home</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .content-container {
+        max-width: 800px;
+        margin: 4rem auto;
+        padding: 0 1.5rem;
+        line-height: 1.6;
+        color: var(--text-color);
+    }
+    .terms-inner {
+        background: white;
+        padding: 3rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    h1 {
+        font-family: 'DM Serif Display', serif;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--primary-color);
+    }
+    .last-updated {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 2rem;
+    }
+    .terms-section {
+        margin-bottom: 2rem;
+    }
+    .terms-section h2 {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+        color: #333;
+    }
+    .terms-footer {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid #eee;
+    }
+</style>
+{% endblock %}
