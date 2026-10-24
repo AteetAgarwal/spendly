@@ -14,6 +14,28 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+
+def get_user_by_email(email):
+    """
+    Fetches a user by their email address.
+    """
+    with get_db() as conn:
+        return conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+
+
+def create_user(name, email, password_hash):
+    """
+    Creates a new user in the database.
+    """
+    with get_db() as conn:
+        cursor = conn.execute(
+            "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+            (name, email, password_hash)
+        )
+        conn.commit()
+        return cursor.lastrowid
+
+
 def init_db():
     """
     Creates all tables using CREATE TABLE IF NOT EXISTS.
