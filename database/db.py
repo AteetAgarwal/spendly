@@ -15,6 +15,14 @@ def get_db():
     return conn
 
 
+def get_user_by_id(user_id):
+    """
+    Fetches a user by their ID.
+    """
+    with get_db() as conn:
+        return conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+
+
 def get_user_by_email(email):
     """
     Fetches a user by their email address.
