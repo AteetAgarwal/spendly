@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Spendly{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Left Column: User Info -->
+    <aside class="profile-sidebar">
+        <div class="user-card">
+            <div class="user-avatar">
+                {{ user['name'][0] | upper }}
+            </div>
+            <h1 class="user-name">{{ user['name'] }}</h1>
+            <p class="user-email">{{ user['email'] }}</p>
+            <div class="user-meta">
+                Member since {{ user['created_at'][:10] }}
+            </div>
+        </div>
+    </aside>
+
+    <!-- Right Column: Account Data -->
+    <section class="profile-main">
+        <!-- Summary Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Total Spent</span>
+                <span class="stat-value">₹4,500</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Transactions</span>
+                <span class="stat-value">12</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Top Category</span>
+                <span class="stat-value">Food</span>
+            </div>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="data-card">
+            <h2 class="card-title">Recent Transactions</h2>
+            <table class="tx-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th style="text-align: right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2026-10-20</td>
+                        <td>Lunch at Cafe</td>
+                        <td><span class="category-badge badge-food">Food</span></td>
+                        <td style="text-align: right;">₹300</td>
+                    </tr>
+                    <tr>
+                        <td>2026-10-15</td>
+                        <td>New Shoes</td>
+                        <td><span class="category-badge badge-shopping">Shopping</span></td>
+                        <td style="text-align: right;">₹3,500</td>
+                    </tr>
+                    <tr>
+                        <td>2026-10-12</td>
+                        <td>Movie Ticket</td>
+                        <td><span class="category-badge badge-entertainment">Entertainment</span></td>
+                        <td style="text-align: right;">₹1,200</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Category Breakdown -->
+        <div class="data-card">
+            <h2 class="card-title">Spending Breakdown</h2>
+            <div class="category-list">
+                <div class="category-item">
+                    <div class="category-info">
+                        <span>Food</span>
+                        <span>₹1,200 (27%)</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 27%;"></div>
+                    </div>
+                </div>
+                <div class="category-item">
+                    <div class="category-info">
+                        <span>Shopping</span>
+                        <span>₹2,100 (47%)</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 47%;"></div>
+                    </div>
+                </div>
+                <div class="category-item">
+                    <div class="category-info">
+                        <span>Transport</span>
+                        <span>₹800 (18%)</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 18%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

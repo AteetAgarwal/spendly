@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database.db import get_db, init_db, seed_db, get_user_by_email, create_user
+from database.db import get_db, init_db, seed_db, get_user_by_email, create_user, get_user_by_id
 
 
 
@@ -72,7 +72,7 @@ def login():
             session["user_id"] = user["id"]
             session["user_name"] = user["name"]
             flash("Welcome back, " + user["name"] + "!")
-            return redirect(url_for("landing"))
+            return redirect(url_for("profile"))
 
         flash("Invalid email or password.")
         return render_template("login.html")
@@ -105,7 +105,19 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    user_id = session.get("user_id")
+    if not user_id:
+        flash("Please log in to view your profile.")
+        return redirect(url_for("login"))
+
+    user = get_user_by_id(user_id)
+    if not user:
+        flash("User not found.")
+        return redirect(url_for("login"))
+
+    # As per spec, we use hardcoded data for UI validation in this step
+    # This allows us to test the full layout before wiring real aggregation queries
+    return render_template("profile.html", user=user)
 
 
 @app.route("/expenses/add")
