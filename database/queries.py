@@ -1,0 +1,158 @@
+import sqlite3
+from database.db import get_db
+from datetime import datetime
+
+def get_user_by_id(user_id):
+    """
+    Fetches user details and formats the membership date.
+    """
+    with get_db() as conn:
+        user = conn.execute(
+            "SELECT name, email, created_at FROM users WHERE id = ?",
+            (user_id,)
+        ).fetchone()
+
+        if not user:
+            return None
+
+        # Format created_at (YYYY-MM-DD HH:MM:SS) to "Month YYYY"
+        dt = datetime.strptime(user["created_at"], "%Y-%m-%d %H:%M:%S")
+        member_since = dt.strftime("%B %Y")
+
+        return {
+            "name": user["name"],
+            "email": user["email"],
+            "member_since": member_since
+        }
+
+def get_summary_stats(user_id, start_date=None, end_date=None):
+    """
+    Calculates total spent, transaction count, and identifies the top category.
+    """
+    with get_db() as conn:
+        query_params = [user_id]
+        conditions = ["user_id = ?"]
+
+        if start_date:
+            conditions.append("date >= ?")
+            query_params.append(start_date)
+        if end_date:
+            conditions.append("date <= ?")
+            query_params.append(end_date)
+
+        where_clause = "WHERE " + " AND ".join(conditions)
+
+        # Total and Count
+        stats = conn.execute(
+            f"SELECT SUM(amount) as total, COUNT(id) as count FROM expenses {where_clause}",
+            query_params
+        ).fetchone()
+
+        total_spent = stats["total"] if stats["total"] else 0.0
+        transaction_count = stats["count"] if stats["count"] else 0
+
+        # Top Category
+        top_cat_row = conn.execute(
+            f"""
+            SELECT category FROM expenses
+            {where_clause}
+            GROUP BY category
+            ORDER BY SUM(amount) DESC
+            LIMIT 1
+            """,
+            query_params
+        ).fetchone()
+
+        top_category = top_cat_row["category"] if top_cat_row else "—"
+
+        return {
+            "total_spent": total_spent,
+            "transaction_count": transaction_count,
+            "top_category": top_category
+        }
+
+def get_recent_transactions(user_id, limit=10, start_date=None, end_date=None):
+    """
+    Fetches the most recent transactions for a user.
+    """
+    with get_db() as conn:
+        query_params = [user_id]
+        conditions = ["user_id = ?"]
+
+        if start_date:
+            conditions.append("date >= ?")
+            query_params.append(start_date)
+        if end_date:
+            conditions.append("date <= ?")
+            query_params.append(end_date)
+
+        where_clause = "WHERE " + " AND ".join(conditions)
+
+        rows = conn.execute(
+            f"""
+            SELECT date, description, category, amount
+            FROM expenses
+            {where_clause}
+            ORDER BY date DESC, created_at DESC
+            LIMIT ?
+            """,
+            query_params + [limit]
+        ).fetchall()
+
+        return [dict(row) for row in rows]
+
+def get_category_breakdown(user_id, start_date=None, end_date=None):
+    """
+    Fetches spending per category with integer percentages that sum to 100.
+    """
+    with get_db() as conn:
+        query_params = [user_id]
+        conditions = ["user_id = ?"]
+
+        if start_date:
+            conditions.append("date >= ?")
+            query_params.append(start_date)
+        if end_date:
+            conditions.append("date <= ?")
+            query_params.append(end_date)
+
+        where_clause = "WHERE " + " AND ".join(conditions)
+
+        # Get totals per category
+        rows = conn.execute(
+            f"""
+            SELECT category as name, SUM(amount) as amount
+            FROM expenses
+            {where_clause}
+            GROUP BY category
+            ORDER BY amount DESC
+            """,
+            query_params
+        ).fetchall()
+
+        if not rows:
+            return []
+
+        total_sum = sum(row["amount"] for row in rows)
+        if total_sum == 0:
+            return []
+
+        breakdown = []
+        running_pct_sum = 0
+
+        # Calculate percentages with rounding
+        for i, row in enumerate(rows):
+            pct = round((row["amount"] / total_sum) * 100)
+
+            # For the last item, adjust to ensure sum is exactly 100
+            if i == len(rows) - 1:
+                pct = 100 - running_pct_sum
+
+            breakdown.append({
+                "name": row["name"],
+                "amount": row["amount"],
+                "pct": pct
+            })
+            running_pct_sum += pct
+
+        return breakdown

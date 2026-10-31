@@ -7,6 +7,10 @@ def get_db():
     """
     Returns a SQLite connection with row_factory and foreign keys enabled.
     """
+    # Allow for a global connection in tests
+    if hasattr(get_db, "_test_conn") and get_db._test_conn:
+        return get_db._test_conn
+
     conn = sqlite3.connect(DATABASE_PATH)
     # Ensure foreign key constraints are enforced in SQLite
     conn.execute("PRAGMA foreign_keys = ON")
