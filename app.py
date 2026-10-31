@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database.db import get_db, init_db, seed_db, get_user_by_email, create_user, get_user_by_id
+from database.db import get_db, init_db, seed_db, get_user_by_email, create_user
+from database.queries import get_user_by_id, get_summary_stats, get_recent_transactions, get_category_breakdown, get_user_by_id
 
 
 
@@ -115,9 +116,10 @@ def profile():
         flash("User not found.")
         return redirect(url_for("login"))
 
-    # As per spec, we use hardcoded data for UI validation in this step
-    # This allows us to test the full layout before wiring real aggregation queries
-    return render_template("profile.html", user=user)
+    stats = get_summary_stats(user_id)
+    transactions = get_recent_transactions(user_id)
+    categories = get_category_breakdown(user_id)
+    return render_template("profile.html", user=user, stats=stats, transactions=transactions, categories=categories)
 
 
 @app.route("/expenses/add")
