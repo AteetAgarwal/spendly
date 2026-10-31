@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database.db import get_db, init_db, seed_db, get_user_by_email, create_user
+from database.db import get_db, init_db, seed_db, get_user_by_email, create_user, create_expense
 from database.queries import get_user_by_id, get_summary_stats, get_recent_transactions, get_category_breakdown, get_user_by_id
+
 
 
 
@@ -135,9 +136,43 @@ def profile():
     )
 
 
-@app.route("/expenses/add")
+@app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
-    return "Add expense — coming in Step 7"
+    user_id = session.get("user_id")
+    if not user_id:
+        flash("Please log in to add an expense.")
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        amount = request.form.get("amount")
+        category = request.form.get("category")
+        date = request.form.get("date")
+        description = request.form.get("description")
+
+        if not amount or not category or not date:
+            flash("All required fields must be filled.")
+            return render_template("add_expense.html")
+
+        try:
+            # Ensure amount is a valid number
+            amount_val = float(amount)
+            if amount_val <= 0:
+                flash("Amount must be greater than zero.")
+                return render_template("add_expense.html")
+
+            from database.db import create_expense
+            create_expense(user_id, amount_val, category, date, description)
+            flash("Expense added successfully!")
+            return redirect(url_for("profile"))
+        except ValueError:
+            flash("Invalid amount entered.")
+            return render_template("add_expense.html")
+        except Exception as e:
+            flash("An unexpected error occurred. Please try again.")
+            return render_template("add_expense.html")
+
+    return render_template("add_expense.html")
+
 
 
 @app.route("/expenses/<int:id>/edit")

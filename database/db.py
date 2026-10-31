@@ -48,6 +48,20 @@ def create_user(name, email, password_hash):
         return cursor.lastrowid
 
 
+def create_expense(user_id, amount, category, date, description):
+    """
+    Creates a new expense record for a user.
+    """
+    with get_db() as conn:
+        cursor = conn.execute(
+            "INSERT INTO expenses (user_id, amount, category, date, description) VALUES (?, ?, ?, ?, ?)",
+            (user_id, amount, category, date, description)
+        )
+        conn.commit()
+        return cursor.lastrowid
+
+
+
 def init_db():
     """
     Creates all tables using CREATE TABLE IF NOT EXISTS.
