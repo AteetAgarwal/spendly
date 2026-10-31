@@ -26,6 +26,79 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.04);
 }
 
+/* Date Filter Form */
+.filter-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1.5rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+}
+
+.filter-group input {
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--ink);
+}
+
+.filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-filter {
+    background: var(--accent);
+    color: var(--paper);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+}
+
+.btn-filter:hover {
+    opacity: 0.9;
+}
+
+.btn-clear {
+    color: var(--ink-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.btn-clear:hover {
+    color: var(--ink);
+}
+
 .user-avatar {
     width: 80px;
     height: 80px;

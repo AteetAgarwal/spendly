@@ -116,10 +116,23 @@ def profile():
         flash("User not found.")
         return redirect(url_for("login"))
 
-    stats = get_summary_stats(user_id)
-    transactions = get_recent_transactions(user_id)
-    categories = get_category_breakdown(user_id)
-    return render_template("profile.html", user=user, stats=stats, transactions=transactions, categories=categories)
+    # Date filters from query parameters
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+
+    stats = get_summary_stats(user_id, start_date=start_date, end_date=end_date)
+    transactions = get_recent_transactions(user_id, start_date=start_date, end_date=end_date)
+    categories = get_category_breakdown(user_id, start_date=start_date, end_date=end_date)
+
+    return render_template(
+        "profile.html",
+        user=user,
+        stats=stats,
+        transactions=transactions,
+        categories=categories,
+        start_date=start_date,
+        end_date=end_date
+    )
 
 
 @app.route("/expenses/add")
