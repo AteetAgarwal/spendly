@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import get_db, init_db, seed_db, get_user_by_email, create_user, create_expense
 from database.queries import get_user_by_id, get_summary_stats, get_recent_transactions, get_category_breakdown, get_user_by_id
-
+from database.db import get_expense_by_id, update_expense
 
 
 
@@ -175,9 +175,51 @@ def add_expense():
 
 
 
-@app.route("/expenses/<int:id>/edit")
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
-    return "Edit expense — coming in Step 8"
+    user_id = session.get("user_id")
+    if not user_id:
+        flash("Please log in to edit an expense.")
+        return redirect(url_for("login"))
+
+    expense = get_expense_by_id(id)
+    if not expense:
+        abort(404)
+
+    if expense["user_id"] != user_id:
+        abort(403)
+
+    if request.method == "POST":
+        amount = request.form.get("amount")
+        category = request.form.get("category")
+        date = request.form.get("date")
+        description = request.form.get("description")
+
+        errors = {}
+        if not amount or not category or not date:
+            if not amount:
+                errors["amount"] = "Amount is required."
+            if not category:
+                errors["category"] = "Category is required."
+            if not date:
+                errors["date"] = "Date is required."
+
+        if errors:
+            return render_template("edit_expense.html", expense=expense, errors=errors,
+                                   form_data=request.form)
+
+        try:
+            amount_value = float(amount)
+            update_expense(id, amount_value, category, date, description)
+            flash("Expense updated successfully.")
+            return redirect(url_for("profile"))
+        except ValueError:
+            errors["amount"] = "Invalid amount."
+            return render_template("edit_expense.html", expense=expense, errors=errors,
+                                   form_data=request.form)
+
+    return render_template("edit_expense.html", expense=expense)
+
 
 
 @app.route("/expenses/<int:id>/delete")

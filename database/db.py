@@ -89,6 +89,32 @@ def init_db():
         """)
         conn.commit()
 
+def get_expense_by_id(expense_id: int):
+    """
+    Fetches a single expense record by its ID.
+    Returns None if no expense is found.
+    """
+    with get_db() as conn:
+        return conn.execute(
+            "SELECT * FROM expenses WHERE id = ?",
+            (expense_id,)
+        ).fetchone()
+
+
+def update_expense(expense_id: int, amount: float, category: str, date: str, description: str):
+    """
+    Updates an existing expense record.
+    """
+    with get_db() as conn:
+        conn.execute(
+            """
+            UPDATE expenses SET amount = ?, category = ?, date = ?, description = ? WHERE id = ?
+            """,
+            (amount, category, date, description, expense_id)
+        )
+        conn.commit()
+
+
 def seed_db():
     """
     Inserts sample data for development.

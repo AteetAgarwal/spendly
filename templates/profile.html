@@ -68,6 +68,7 @@
                         <th>Description</th>
                         <th>Category</th>
                         <th style="text-align: right;">Amount</th>
+<th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -77,6 +78,16 @@
                         <td>{{ tx['description'] }}</td>
                         <td><span class="category-badge"> {{ tx['category'] }} </span></td>
                         <td style="text-align: right;">₹{{ "%.2f"|format(tx['amount']) }}</td>
+<td>
+  {% set expense_id = tx.get('id') or tx.get('expense_id') %}
+  {% if expense_id %}
+    <a href="{{ url_for('edit_expense', id=expense_id) }}" class="btn btn-edit" style="display:inline-block;">Edit</a>
+  {% endif %}
+</td>
+<td>{% set expense_id = tx.get('id') or tx.get('expense_id') %}
+{% if expense_id %}
+  <a href="{{ url_for('edit_expense', id=expense_id) }}" class="btn btn-edit" style="display:inline-block;">Edit</a>
+{% endif %}</td>
                     </tr>
                     {% endfor %}
                     {% if not transactions %}
@@ -99,7 +110,7 @@
                         <span>₹{{ "%.2f"|format(cat['amount']) }} ({{ cat['pct'] }}%)</span>
                     </div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: {{ cat['pct'] }}%;"></div>
+                        <div class="progress-fill" style="width: {{ cat['pct'] }}%)"></div>
                     </div>
                 </div>
                 {% endfor %}
