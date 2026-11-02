@@ -18,7 +18,6 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
-
 def get_user_by_id(user_id):
     """
     Fetches a user by their ID.
@@ -26,14 +25,12 @@ def get_user_by_id(user_id):
     with get_db() as conn:
         return conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
 
-
 def get_user_by_email(email):
     """
     Fetches a user by their email address.
     """
     with get_db() as conn:
         return conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
-
 
 def create_user(name, email, password_hash):
     """
@@ -47,7 +44,6 @@ def create_user(name, email, password_hash):
         conn.commit()
         return cursor.lastrowid
 
-
 def create_expense(user_id, amount, category, date, description):
     """
     Creates a new expense record for a user.
@@ -59,8 +55,6 @@ def create_expense(user_id, amount, category, date, description):
         )
         conn.commit()
         return cursor.lastrowid
-
-
 
 def init_db():
     """
@@ -107,7 +101,6 @@ def get_expense_by_id(expense_id: int):
         expense['id'] = row['id']  # ensure 'id' key is present
         return expense
 
-
 def update_expense(expense_id: int, amount: float, category: str, date: str, description: str):
     """
     Updates an existing expense record.
@@ -121,6 +114,15 @@ def update_expense(expense_id: int, amount: float, category: str, date: str, des
         )
         conn.commit()
 
+def delete_expense(expense_id: int) -> bool:
+    """
+    Delete the expense with the given ID.
+    Returns True if a row was deleted, False otherwise.
+    """
+    with get_db() as conn:
+        cur = conn.execute('DELETE FROM expenses WHERE id = ?', (expense_id,))
+        conn.commit()
+        return cur.rowcount > 0
 
 def seed_db():
     """
@@ -145,7 +147,7 @@ def seed_db():
         )
         user_id = cursor.lastrowid
 
-        # Sample expenses (INR ₹)
+        # Sample expenses (INR 34)
         expenses = [
             (user_id, 450.00, 'Food', '2026-10-01', 'Grocery shopping'),
             (user_id, 120.00, 'Transport', '2026-10-02', 'Auto rickshaw to office'),

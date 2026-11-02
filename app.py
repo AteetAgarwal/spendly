@@ -1,16 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
 from werkzeug.security import generate_password_hash, check_password_hash
-from database.db import get_db, init_db, seed_db, get_user_by_email, create_user, create_expense
-from database.queries import get_user_by_id, get_summary_stats, get_recent_transactions, get_category_breakdown, get_user_by_id
-from database.db import get_expense_by_id, update_expense
-
-
-
+from database.db import get_db, init_db, seed_db, get_user_by_email, create_user, create_expense, get_expense_by_id, update_expense, delete_expense as db_delete_expense
+from database.queries import get_user_by_id, get_summary_stats, get_recent_transactions, get_category_breakdown
 
 app = Flask(__name__)
 app.secret_key = "dev_secret_key_for_flashing"
-
-
 
 # ------------------------------------------------------------------ #
 # Routes                                                              #
@@ -19,7 +13,6 @@ app.secret_key = "dev_secret_key_for_flashing"
 @app.route("/")
 def landing():
     return render_template("landing.html")
-
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -54,8 +47,6 @@ def register():
 
     return render_template("register.html")
 
-
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if session.get("user_id"):
@@ -81,29 +72,19 @@ def login():
 
     return render_template("login.html")
 
-
-
 @app.route("/terms")
 def terms():
     return render_template("terms.html")
 
-
 @app.route("/privacy")
 def privacy():
     return render_template("privacy.html")
-
-
-# ------------------------------------------------------------------ #
-# Placeholder routes — students will implement these                  #
-# ------------------------------------------------------------------ #
 
 @app.route("/logout")
 def logout():
     session.clear()
     flash("You have been logged out.")
     return redirect(url_for("landing"))
-
-
 
 @app.route("/profile")
 def profile():
@@ -117,7 +98,6 @@ def profile():
         flash("User not found.")
         return redirect(url_for("login"))
 
-    # Date filters from query parameters
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
 
@@ -134,7 +114,6 @@ def profile():
         start_date=start_date,
         end_date=end_date
     )
-
 
 @app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
@@ -154,26 +133,22 @@ def add_expense():
             return render_template("add_expense.html")
 
         try:
-            # Ensure amount is a valid number
             amount_val = float(amount)
             if amount_val <= 0:
                 flash("Amount must be greater than zero.")
                 return render_template("add_expense.html")
 
-            from database.db import create_expense
             create_expense(user_id, amount_val, category, date, description)
             flash("Expense added successfully!")
             return redirect(url_for("profile"))
         except ValueError:
             flash("Invalid amount entered.")
             return render_template("add_expense.html")
-        except Exception as e:
+        except Exception:
             flash("An unexpected error occurred. Please try again.")
             return render_template("add_expense.html")
 
     return render_template("add_expense.html")
-
-
 
 @app.route("/expenses/<int:id>/edit-form")
 def edit_expense_form(id):
@@ -189,7 +164,6 @@ def edit_expense_form(id):
         return "Forbidden", 403
 
     return render_template("edit_expense_form.html", expense=expense, errors={}, form_data=None)
-
 
 @app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
@@ -243,12 +217,26 @@ def edit_expense(id):
 
     return render_template("edit_expense.html", expense=expense, errors={}, form_data=None)
 
-
-
 @app.route("/expenses/<int:id>/delete")
 def delete_expense(id):
-    return "Delete expense — coming in Step 9"
+    user_id = session.get("user_id")
+    if not user_id:
+        flash("Please log in to delete an expense.")
+        return redirect(url_for("login"))
 
+    expense = get_expense_by_id(id)
+    if not expense:
+        abort(404)
+
+    if expense["user_id"] != user_id:
+        abort(403)
+
+    success = db_delete_expense(id)
+    if success:
+        flash("Expense deleted successfully.")
+    else:
+        flash("Failed to delete expense. Please try again.")
+    return redirect(url_for("profile"))
 
 if __name__ == "__main__":
     with app.app_context():
