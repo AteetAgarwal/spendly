@@ -95,10 +95,17 @@ def get_expense_by_id(expense_id: int):
     Returns None if no expense is found.
     """
     with get_db() as conn:
-        return conn.execute(
+        row = conn.execute(
             "SELECT * FROM expenses WHERE id = ?",
             (expense_id,)
         ).fetchone()
+
+        if row is None:
+            return None
+
+        expense = dict(row)
+        expense['id'] = row['id']  # ensure 'id' key is present
+        return expense
 
 
 def update_expense(expense_id: int, amount: float, category: str, date: str, description: str):

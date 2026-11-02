@@ -22,7 +22,7 @@ No database changes. The existing `expenses` table supports updates.
 ## Files to change
 - `app.py` — Add the route handlers for GET and POST to edit an expense.
 - `database/db.py` — Add helper functions for fetching a single expense by id and updating it.
-
+- `profile.html` — Add column Actions with edit button against to each expense allowing user to edit their expense
 ## Files to create
 - `templates/edit_expense.html`
 

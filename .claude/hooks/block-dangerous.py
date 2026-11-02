@@ -4,10 +4,12 @@ import re
 from datetime import datetime
 
 def main():
-    # Log the incoming request for debugging
+    # Join command line arguments into a single string and lowercase it for case-insensitive matching
     args = " ".join(sys.argv[1:])
-    log_entry = f"[{datetime.now()}] Args: {args}\n"
+    args_lower = args.lower()
 
+    # Log all commands received, for debugging
+    log_entry = f"[{datetime.now()}] Args: {args}\n"
     try:
         with open(".claude/hooks/hook_debug.log", "a") as f:
             f.write(log_entry)
@@ -23,10 +25,11 @@ def main():
 
     deletion_pattern = re.compile(r'\b(rm|delete|unlink)\b')
 
-    if deletion_pattern.search(args.lower()):
+    if deletion_pattern.search(args_lower):
         for critical_file in CRITICAL_FILES:
-            if re.search(rf'\b{re.escape(critical_file)}\b', args):
-                # Log the block action
+            # Lowercase match critical file name
+            if re.search(rf'\b{re.escape(critical_file.lower())}\b', args_lower):
+                # Log the blocked attempt
                 try:
                     with open(".claude/hooks/hook_debug.log", "a") as f:
                         f.write(f"[{datetime.now()}] ❌ BLOCKED: {critical_file}\n")
@@ -37,6 +40,7 @@ def main():
                 sys.exit(2)
 
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

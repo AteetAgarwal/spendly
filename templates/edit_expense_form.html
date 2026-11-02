@@ -1,0 +1,32 @@
+<form method="post" action="{{ url_for('edit_expense', id=expense['id']) }}">
+    <div>
+        <label for="amount">Amount:</label>
+        <input type="text" id="amount" name="amount" value="{{ form_data.amount if form_data else expense.amount }}" required>
+        {% if errors.amount %}
+        <p class="error">{{ errors.amount }}</p>
+        {% endif %}
+    </div>
+
+    <div>
+        <label for="category">Category:</label>
+        <input type="text" id="category" name="category" value="{{ form_data.category if form_data else expense.category }}" required>
+        {% if errors.category %}
+        <p class="error">{{ errors.category }}</p>
+        {% endif %}
+    </div>
+
+    <div>
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" value="{{ form_data.date if form_data else expense.date }}" required>
+        {% if errors.date %}
+        <p class="error">{{ errors.date }}</p>
+        {% endif %}
+    </div>
+
+    <div>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description">{{ form_data.description if form_data else expense.description }}</textarea>
+    </div>
+
+    <button type="submit">Update Expense</button>
+</form>

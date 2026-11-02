@@ -90,7 +90,7 @@ def get_recent_transactions(user_id, limit=10, start_date=None, end_date=None):
 
         rows = conn.execute(
             f"""
-            SELECT date, description, category, amount
+            SELECT id, date, description, category, amount
             FROM expenses
             {where_clause}
             ORDER BY date DESC, created_at DESC

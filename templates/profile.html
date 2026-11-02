@@ -68,7 +68,7 @@
                         <th>Description</th>
                         <th>Category</th>
                         <th style="text-align: right;">Amount</th>
-<th>Action</th>
+<th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -80,14 +80,10 @@
                         <td style="text-align: right;">₹{{ "%.2f"|format(tx['amount']) }}</td>
 <td>
   {% set expense_id = tx.get('id') or tx.get('expense_id') %}
-  {% if expense_id %}
-    <a href="{{ url_for('edit_expense', id=expense_id) }}" class="btn btn-edit" style="display:inline-block;">Edit</a>
+  {% if expense_id is not none %}
+    <a href="#" class="btn btn-edit" data-expense-id="{{ expense_id }}" style="padding: 4px 8px; background-color: #007bff; color: white; border-radius: 4px; text-decoration: none;">Edit</a>
   {% endif %}
 </td>
-<td>{% set expense_id = tx.get('id') or tx.get('expense_id') %}
-{% if expense_id %}
-  <a href="{{ url_for('edit_expense', id=expense_id) }}" class="btn btn-edit" style="display:inline-block;">Edit</a>
-{% endif %}</td>
                     </tr>
                     {% endfor %}
                     {% if not transactions %}
@@ -96,7 +92,99 @@
                     </tr>
                     {% endif %}
                 </tbody>
-            </table>
+</table>
+
+<!-- Modal container for edit expense popup -->
+<style>
+  /* Modal container covers whole screen with translucent background */
+  #editExpenseModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow: auto;
+  }
+  /* Modal content box centered and scrollable if needed */
+  #editExpenseModal .modal-content {
+    background-color: white;
+    max-height: 80vh;
+    overflow-y: auto;
+    margin: 5% auto;
+    padding: 20px;
+    width: 400px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    position: relative;
+    font-family: Arial, sans-serif;
+  }
+  /* Modal close button in top-right corner */
+  #closeModal {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 20px;
+  }
+  /* Form styles in modal for inputs and buttons */
+  #modalBody form {
+    display: flex;
+    flex-direction: column;
+  }
+  #modalBody label {
+    margin: 10px 0 5px;
+    font-weight: bold;
+  }
+  #modalBody input[type="text"],
+  #modalBody input[type="number"],
+  #modalBody input[type="date"],
+  #modalBody select,
+  #modalBody textarea {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  #modalBody textarea {
+    resize: vertical;
+  }
+  #modalBody .form-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  #modalBody button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #modalBody button[type="submit"]:hover {
+    background-color: #0056b3;
+  }
+  #modalBody .error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 3px;
+  }
+</style>
+
+<div id="editExpenseModal" class="modal">
+  <div class="modal-content">
+        <div id="modalBody">Loading...</div>
+  </div>
+</div>
+
+
         </div>
 
         <!-- Category Breakdown -->
@@ -110,7 +198,7 @@
                         <span>₹{{ "%.2f"|format(cat['amount']) }} ({{ cat['pct'] }}%)</span>
                     </div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: {{ cat['pct'] }}%)"></div>
+                        <div class="progress-fill" style="width: {{ cat['pct'] }}%"></div>
                     </div>
                 </div>
                 {% endfor %}
@@ -121,4 +209,71 @@
         </div>
     </section>
 </div>
+<script>
+  // Modal popup and AJAX handling for edit expense
+  document.querySelectorAll('.btn-edit').forEach(function(btn) {
+    btn.addEventListener('click', function(event) {
+      event.preventDefault();
+      var expenseId = btn.getAttribute('data-expense-id');
+      var modal = document.getElementById('editExpenseModal');
+      var modalBody = document.getElementById('modalBody');
+
+      modal.style.display = 'block';
+      modalBody.innerHTML = 'Loading...';
+
+      fetch('/expenses/' + expenseId + '/edit-form')
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('Failed to load form.');
+          }
+          return response.text();
+        })
+        .then(function(html) {
+          modalBody.innerHTML = html;
+          var form = modalBody.querySelector('form');
+          form.onsubmit = function(e) {
+            e.preventDefault();
+            var formData = new FormData(form);
+            fetch(form.action, {
+              method: 'POST',
+              body: formData,
+              headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(json) {
+              if (json.success) {
+                alert('Expense updated successfully.');
+                modal.style.display = 'none';
+                location.reload();
+              } else {
+                for (var field in json.errors) {
+                  var errorElem = form.querySelector('.error-' + field);
+                  if (errorElem) {
+                    errorElem.textContent = json.errors[field];
+                  }
+                }
+              }
+            })
+            .catch(function() {
+              alert('An error occurred while submitting the form.');
+            });
+          };
+        })
+        .catch(function() {
+          modalBody.innerHTML = '<p style="color:red;">Error loading form.</p>';
+        });
+    });
+  });
+
+  document.getElementById('closeModal').onclick = function() {
+    document.getElementById('editExpenseModal').style.display = 'none';
+  };
+
+  window.onclick = function(event) {
+    var modal = document.getElementById('editExpenseModal');
+    if (event.target == modal) {
+      modal.style.display = 'none';
+    }
+  };
+</script>
 {% endblock %}

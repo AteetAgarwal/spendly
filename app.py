@@ -175,6 +175,22 @@ def add_expense():
 
 
 
+@app.route("/expenses/<int:id>/edit-form")
+def edit_expense_form(id):
+    user_id = session.get("user_id")
+    if not user_id:
+        return "", 403
+
+    expense = get_expense_by_id(id)
+    if not expense:
+        return "Not found", 404
+
+    if expense["user_id"] != user_id:
+        return "Forbidden", 403
+
+    return render_template("edit_expense_form.html", expense=expense, errors={}, form_data=None)
+
+
 @app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
     user_id = session.get("user_id")
@@ -205,20 +221,27 @@ def edit_expense(id):
                 errors["date"] = "Date is required."
 
         if errors:
-            return render_template("edit_expense.html", expense=expense, errors=errors,
-                                   form_data=request.form)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return {"success": False, "errors": errors}, 400
+            else:
+                return render_template("edit_expense.html", expense=expense, errors=errors, form_data=request.form)
 
         try:
             amount_value = float(amount)
             update_expense(id, amount_value, category, date, description)
-            flash("Expense updated successfully.")
-            return redirect(url_for("profile"))
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return {"success": True}
+            else:
+                flash("Expense updated successfully.")
+                return redirect(url_for("profile"))
         except ValueError:
             errors["amount"] = "Invalid amount."
-            return render_template("edit_expense.html", expense=expense, errors=errors,
-                                   form_data=request.form)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return {"success": False, "errors": errors}, 400
+            else:
+                return render_template("edit_expense.html", expense=expense, errors=errors, form_data=request.form)
 
-    return render_template("edit_expense.html", expense=expense)
+    return render_template("edit_expense.html", expense=expense, errors={}, form_data=None)
 
 
 
